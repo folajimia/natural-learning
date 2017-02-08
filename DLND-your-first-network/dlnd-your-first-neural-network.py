@@ -7,7 +7,7 @@
 # 
 # 
 
-# In[218]:
+# In[452]:
 
 get_ipython().magic('matplotlib inline')
 get_ipython().magic("config InlineBackend.figure_format = 'retina'")
@@ -21,14 +21,14 @@ import matplotlib.pyplot as plt
 # 
 # A critical step in working with neural networks is preparing the data correctly. Variables on different scales make it difficult for the network to efficiently learn the correct weights. Below, we've written the code to load and prepare the data. You'll learn more about this soon!
 
-# In[219]:
+# In[453]:
 
 data_path = 'Bike-Sharing-Dataset/hour.csv'
 
 rides = pd.read_csv(data_path)
 
 
-# In[220]:
+# In[454]:
 
 rides.head()
 
@@ -39,7 +39,7 @@ rides.head()
 # 
 # Below is a plot showing the number of bike riders over the first 10 days in the data set. You can see the hourly rentals here. This data is pretty complicated! The weekends have lower over all ridership and there are spikes when people are biking to and from work during the week. Looking at the data above, we also have information about temperature, humidity, and windspeed, all of these likely affecting the number of riders. You'll be trying to capture all this with your model.
 
-# In[221]:
+# In[455]:
 
 rides[:24*10].plot(x='dteday', y='cnt')
 
@@ -47,7 +47,7 @@ rides[:24*10].plot(x='dteday', y='cnt')
 # ### Dummy variables
 # Here we have some categorical variables like season, weather, month. To include these in our model, we'll need to make binary dummy variables. This is simple to do with Pandas thanks to `get_dummies()`.
 
-# In[222]:
+# In[456]:
 
 dummy_fields = ['season', 'weathersit', 'mnth', 'hr', 'weekday']
 for each in dummy_fields:
@@ -65,7 +65,7 @@ data.head()
 # 
 # The scaling factors are saved so we can go backwards when we use the network for predictions.
 
-# In[223]:
+# In[457]:
 
 quant_features = ['casual', 'registered', 'cnt', 'temp', 'hum', 'windspeed']
 # Store scalings in a dictionary so we can convert back later
@@ -80,7 +80,7 @@ for each in quant_features:
 # 
 # We'll save the last 21 days of the data to use as a test set after we've trained the network. We'll use this set to make predictions and compare them with the actual number of riders.
 
-# In[224]:
+# In[458]:
 
 # Save the last 21 days 
 test_data = data[-21*24:]
@@ -94,7 +94,7 @@ test_features, test_targets = test_data.drop(target_fields, axis=1), test_data[t
 
 # We'll split the data into two sets, one for training and one for validating as the network is being trained. Since this is time series data, we'll train on historical data, then try to predict on future data (the validation set).
 
-# In[225]:
+# In[459]:
 
 # Hold out the last 60 days of the remaining data as a validation set
 train_features, train_targets = features[:-60*24], targets[:-60*24]
@@ -118,7 +118,7 @@ val_features, val_targets = features[-60*24:], targets[-60*24:]
 # 4. Implement the forward pass in the `run` method.
 #   
 
-# In[226]:
+# In[460]:
 
 class NeuralNetwork(object):
     def __init__(self, input_nodes, hidden_nodes, output_nodes, learning_rate):
@@ -204,7 +204,7 @@ class NeuralNetwork(object):
         return final_outputs
 
 
-# In[227]:
+# In[461]:
 
 def MSE(y, Y):
     return np.mean((y-Y)**2)
@@ -225,14 +225,14 @@ def MSE(y, Y):
 # ### Choose the number of hidden nodes
 # The more hidden nodes you have, the more accurate predictions the model will make. Try a few different numbers and see how it affects the performance. You can look at the losses dictionary for a metric of the network performance. If the number of hidden units is too low, then the model won't have enough space to learn and if it is too high there are too many options for the direction that the learning can take. The trick here is to find the right balance in number of hidden units you choose.
 
-# In[228]:
+# In[462]:
 
 import sys
 
 ### Set the hyperparameters here ###
-epochs = 100
+epochs = 850
 learning_rate = 0.2
-hidden_nodes = 6
+hidden_nodes = 25
 output_nodes = 1
 
 N_i = train_features.shape[1]
@@ -255,7 +255,7 @@ for e in range(epochs):
     losses['validation'].append(val_loss)
 
 
-# In[229]:
+# In[451]:
 
 plt.plot(losses['train'], label='Training loss')
 plt.plot(losses['validation'], label='Validation loss')
@@ -267,7 +267,7 @@ plt.ylim(ymax=0.5)
 # 
 # Here, use the test data to view how well your network is modeling the data. If something is completely wrong here, make sure each step in your network is implemented correctly.
 
-# In[230]:
+# In[391]:
 
 fig, ax = plt.subplots(figsize=(8,4))
 
@@ -291,12 +291,13 @@ _ = ax.set_xticklabels(dates[12::24], rotation=45)
 # > **Note:** You can edit the text in this cell by double clicking on it. When you want to render the text, press control + enter
 # 
 # #### Your answer below
+# My model seems to predict data well until the 22nd of Dec. Between the 22 of Dec and the 30 od dec, its accuracy drops with the worst prediction on the 25th of december. It fails the 25th where there is almost no data(almost no use of the cycle service). The 25th is an outlier that does not fit with the generalized data based on the training.It seems it fails because of overfitting.
 
 # ## Unit tests
 # 
 # Run these unit tests to check the correctness of your network implementation. These tests must all be successful to pass the project.
 
-# In[231]:
+# In[392]:
 
 import unittest
 
